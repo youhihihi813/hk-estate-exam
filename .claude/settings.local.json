@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(brew install *)",
+      "Read(//opt/homebrew/bin/**)",
+      "Read(//usr/local/bin/**)",
+      "Bash(curl -sL https://github.com/cli/cli/releases/download/v2.50.0/gh_2.50.0_macOS_arm64.tar.gz -o /tmp/gh.tar.gz)",
+      "Bash(tar -xzf /tmp/gh.tar.gz -C /tmp)",
+      "Read(//tmp/gh_2.50.0_macOS_arm64/**)",
+      "Bash(curl -sL \"https://github.com/cli/cli/releases/download/v2.50.0/gh_2.50.0_macOS_arm64.tar.gz\" -o /tmp/gh.tar.gz)",
+      "Read(//private/tmp/**)",
+      "WebFetch(domain:github.com)",
+      "Bash(curl -fsSL \"https://github.com/cli/cli/releases/download/v2.93.0/gh_2.93.0_macOS_arm64.tar.gz\" -o /tmp/gh.tar.gz)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(curl -s \"https://api.github.com/repos/cli/cli/releases/latest\")",
+      "Bash(python3 -c \"import sys,json; assets=[a['browser_download_url'] for a in json.load\\(sys.stdin\\)['assets'] if 'macOS' in a['name'] or 'darwin' in a['name'].lower\\(\\)]; [print\\(a\\) for a in assets]\")",
+      "Bash(curl -fsSL \"https://github.com/cli/cli/releases/download/v2.93.0/gh_2.93.0_macOS_arm64.zip\" -o /tmp/gh.zip)",
+      "Read(//tmp/**)",
+      "Bash(unzip -q /tmp/gh.zip -d /tmp/gh_install)",
+      "Bash(/tmp/gh_install/gh_2.93.0_macOS_arm64/bin/gh --version)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
+    ]
+  }
+}

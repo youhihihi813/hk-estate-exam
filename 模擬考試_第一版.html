@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>香港地產代理資格考試 — 模擬考試</title>
+<style>
+  :root {
+    --primary: #1a3a5c;
+    --accent: #c8a84b;
+    --pass: #2e7d32;
+    --fail: #c62828;
+    --bg: #f5f6f8;
+    --card: #ffffff;
+    --border: #dde2ec;
+    --text: #1c2b3a;
+    --muted: #6b7c93;
+    --option-hover: #eef3fb;
+    --option-selected: #d6e4f7;
+    --option-correct: #e8f5e9;
+    --option-wrong: #ffebee;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Helvetica Neue', Arial, 'Microsoft YaHei', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* ── COVER ── */
+  #cover { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:40px 20px; text-align:center; }
+  .cover-badge { background: var(--primary); color:#fff; font-size:13px; letter-spacing:2px; padding:6px 18px; border-radius:20px; margin-bottom:24px; display:inline-block; }
+  .cover-title { font-size:clamp(22px,4vw,36px); font-weight:700; color:var(--primary); line-height:1.3; margin-bottom:8px; }
+  .cover-sub { font-size:16px; color:var(--muted); margin-bottom:32px; }
+  .cover-info { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:16px; max-width:600px; width:100%; margin-bottom:36px; }
+  .info-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; }
+  .info-card .label { font-size:12px; color:var(--muted); margin-bottom:4px; }
+  .info-card .value { font-size:18px; font-weight:700; color:var(--primary); }
+  .btn-start { background:var(--primary); color:#fff; border:none; padding:16px 48px; border-radius:10px; font-size:18px; font-weight:700; cursor:pointer; transition:transform .15s,box-shadow .15s; }
+  .btn-start:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(26,58,92,.3); }
+  .cover-note { margin-top:20px; font-size:13px; color:var(--muted); max-width:480px; line-height:1.6; }
+
+  /* ── EXAM ── */
+  #exam { display:none; }
+  .exam-header { background:var(--primary); color:#fff; padding:14px 24px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,.2); }
+  .exam-header h2 { font-size:16px; font-weight:600; }
+  .header-right { display:flex; align-items:center; gap:20px; }
+  #timer { font-size:20px; font-weight:700; font-variant-numeric:tabular-nums; letter-spacing:1px; }
+  #timer.warning { color:#ffb300; }
+  #timer.danger { color:#ff5252; animation:pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+  .progress-bar { height:4px; background:rgba(255,255,255,.2); }
+  .progress-fill { height:100%; background:var(--accent); transition:width .3s; }
+
+  .exam-body { max-width:820px; margin:0 auto; padding:24px 20px 80px; }
+  .part-header { background:var(--primary); color:#fff; border-radius:12px; padding:18px 24px; margin-bottom:24px; }
+  .part-header h3 { font-size:18px; font-weight:700; margin-bottom:4px; }
+  .part-header p { font-size:13px; opacity:.8; }
+
+  /* Case block for Part 2 */
+  .case-block { background:#fffbf0; border:1px solid #e0d3a0; border-left:4px solid var(--accent); border-radius:10px; padding:18px 20px; margin-bottom:20px; }
+  .case-block h4 { font-size:14px; font-weight:700; color:var(--primary); margin-bottom:8px; }
+  .case-block p { font-size:14px; line-height:1.7; color:#3a3520; }
+
+  .question-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:22px 24px; margin-bottom:16px; }
+  .q-num { font-size:12px; font-weight:700; color:var(--accent); letter-spacing:1px; margin-bottom:10px; }
+  .q-text { font-size:15px; line-height:1.7; margin-bottom:16px; font-weight:500; }
+  .options { display:flex; flex-direction:column; gap:8px; }
+  .option { display:flex; align-items:flex-start; gap:12px; padding:12px 14px; border:1.5px solid var(--border); border-radius:8px; cursor:pointer; transition:background .12s, border-color .12s; font-size:14px; line-height:1.5; }
+  .option:hover { background:var(--option-hover); border-color:#aac0e0; }
+  .option.selected { background:var(--option-selected); border-color:#5b9bd5; }
+  .option.correct { background:var(--option-correct); border-color:#4caf50; }
+  .option.wrong { background:var(--option-wrong); border-color:#ef5350; }
+  .option.show-correct { background:var(--option-correct); border-color:#4caf50; }
+  .opt-key { font-weight:700; color:var(--primary); min-width:18px; flex-shrink:0; }
+  .option.correct .opt-key { color:#2e7d32; }
+  .option.wrong .opt-key { color:#c62828; }
+
+  .nav-bar { position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:1px solid var(--border); padding:12px 20px; display:flex; justify-content:center; gap:12px; z-index:99; box-shadow:0 -2px 10px rgba(0,0,0,.08); }
+  .btn { padding:12px 28px; border-radius:8px; border:none; font-size:15px; font-weight:600; cursor:pointer; transition:transform .12s, box-shadow .12s; }
+  .btn:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.15); }
+  .btn-primary { background:var(--primary); color:#fff; }
+  .btn-secondary { background:var(--card); color:var(--primary); border:1.5px solid var(--primary); }
+  .btn-accent { background:var(--accent); color:#fff; }
+  .btn:disabled { opacity:.4; cursor:not-allowed; transform:none; box-shadow:none; }
+
+  /* ── RESULTS ── */
+  #results { display:none; max-width:760px; margin:0 auto; padding:40px 20px; }
+  .results-header { text-align:center; margin-bottom:32px; }
+  .results-header h2 { font-size:28px; font-weight:700; color:var(--primary); margin-bottom:8px; }
+  .overall-badge { display:inline-block; font-size:18px; font-weight:700; padding:10px 32px; border-radius:30px; margin-bottom:24px; }
+  .badge-pass { background:#e8f5e9; color:#2e7d32; border:2px solid #4caf50; }
+  .badge-fail { background:#ffebee; color:#c62828; border:2px solid #ef5350; }
+  .score-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:28px; }
+  .score-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:24px; text-align:center; }
+  .score-card h4 { font-size:13px; color:var(--muted); margin-bottom:12px; letter-spacing:.5px; }
+  .score-big { font-size:48px; font-weight:800; line-height:1; margin-bottom:6px; }
+  .score-sub { font-size:14px; color:var(--muted); }
+  .score-pass { color:var(--pass); }
+  .score-fail { color:var(--fail); }
+  .result-note { font-size:13px; padding:10px 14px; border-radius:8px; margin-top:10px; font-weight:600; }
+  .note-pass { background:#e8f5e9; color:#2e7d32; }
+  .note-fail { background:#ffebee; color:#c62828; }
+
+  .review-section { margin-top:32px; }
+  .review-section h3 { font-size:18px; font-weight:700; color:var(--primary); margin-bottom:16px; border-bottom:2px solid var(--border); padding-bottom:10px; }
+  .review-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:18px 20px; margin-bottom:12px; }
+  .review-card.r-correct { border-left:4px solid #4caf50; }
+  .review-card.r-wrong { border-left:4px solid #ef5350; }
+  .review-card.r-skip { border-left:4px solid #ff9800; }
+  .review-q { font-size:14px; font-weight:500; margin-bottom:10px; line-height:1.6; }
+  .review-answers { font-size:13px; }
+  .review-answers span { display:inline-block; padding:3px 10px; border-radius:12px; margin-right:6px; margin-bottom:4px; font-weight:600; }
+  .ans-yours { background:#e3f2fd; color:#1565c0; }
+  .ans-correct-label { background:#e8f5e9; color:#2e7d32; }
+  .ans-skip { background:#fff3e0; color:#e65100; }
+  .explanation { font-size:13px; color:var(--muted); margin-top:8px; line-height:1.6; padding:8px 12px; background:var(--bg); border-radius:6px; }
+
+  .btn-row { display:flex; gap:12px; justify-content:center; margin-top:28px; flex-wrap:wrap; }
+
+  /* ── MISC ── */
+  .dot-nav { display:flex; flex-wrap:wrap; gap:4px; max-width:400px; }
+  .dot { width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,.3); cursor:pointer; transition:background .15s; }
+  .dot.answered { background:var(--accent); }
+  .dot.current { background:#fff; }
+
+  @media (max-width:540px) {
+    .score-grid { grid-template-columns:1fr; }
+    .btn { padding:12px 20px; font-size:14px; }
+    .exam-header h2 { font-size:14px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ COVER ══════════════ -->
+<div id="cover">
+  <span class="cover-badge">香港地產代理監管局 EAAB</span>
+  <h1 class="cover-title">地產代理資格考試<br>模擬練習 — 第一版</h1>
+  <p class="cover-sub">Estate Agents Qualifying Examination (EAQE) Mock Test</p>
+  <div class="cover-info">
+    <div class="info-card"><div class="label">總題數</div><div class="value">50 題</div></div>
+    <div class="info-card"><div class="label">第一部分</div><div class="value">30 題</div></div>
+    <div class="info-card"><div class="label">第二部分</div><div class="value">20 題</div></div>
+    <div class="info-card"><div class="label">考試時間</div><div class="value">3 小時</div></div>
+    <div class="info-card"><div class="label">合格標準</div><div class="value">各部分 ≥ 60%</div></div>
+    <div class="info-card"><div class="label">選項</div><div class="value">5 選 1 (A–E)</div></div>
+  </div>
+  <button class="btn-start" onclick="startExam()">開始模擬考試</button>
+  <p class="cover-note">⚠️ 計時器於開始後立即啟動。所有題目均以現行法例及條例為準（包括 2024 年撤辣後的最新印花稅規定）。</p>
+</div>
+
+<!-- ══════════════ EXAM ══════════════ -->
+<div id="exam">
+  <div class="exam-header">
+    <div>
+      <h2 id="part-label">第一部分</h2>
+      <div class="dot-nav" id="dot-nav"></div>
+    </div>
+    <div class="header-right">
+      <div id="timer">3:00:00</div>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+
+  <div class="exam-body" id="exam-body"></div>
+
+  <div class="nav-bar">
+    <button class="btn btn-secondary" id="btn-prev" onclick="goPrev()" disabled>← 上一題</button>
+    <button class="btn btn-primary" id="btn-next" onclick="goNext()">下一題 →</button>
+    <button class="btn btn-accent" id="btn-submit" onclick="submitExam()" style="display:none">提交答案</button>
+  </div>
+</div>
+
+<!-- ══════════════ RESULTS ══════════════ -->
+<div id="results"></div>
+
+<script>
+// ══════════════════════════════════════════
+//  QUESTION BANK
+// ══════════════════════════════════════════
+const questions = [
+
+// ─── PART 1 : 30 Independent Questions ───
+
+// 第一部分: 香港地產代理行業概況
+{part:1, area:"香港地產代理行業概況", q:"地產代理監管局（監管局）的主要法定職能包括以下哪項？",
+ opts:["A. 制定物業市場買賣成交價格","B. 審批香港所有物業建築圖則","C. 向地產代理及營業員發牌及監管其操守","D. 管理香港房屋委員會轄下公共屋邨","E. 向買家提供物業按揭保險"],
+ ans:"C", exp:"監管局根據《地產代理條例》成立，主要職能為向地產代理及營業員發牌、調查投訴及進行紀律聆訊，以維持業界專業水平。"},
+
+{part:1, area:"香港地產代理行業概況", q:"以下哪個機構負責主辦香港地產代理資格考試（EAQE）？",
+ opts:["A. 地產代理監管局（EAA）","B. 香港房屋委員會","C. 高峰進修學院考試中心（PEAK）","D. 香港大學專業進修學院","E. 差餉物業估價署"],
+ ans:"C", exp:"地產代理資格考試（EAQE）及營業員資格考試（SQE）由高峰進修學院考試中心（PEAK Examination Centre）負責主辦。"},
+
+{part:1, area:"香港地產代理行業概況", q:"根據《地產代理條例》，以下哪項行為構成「地產代理工作」並須持有有效牌照？",
+ opts:["A. 業主親自出售其名下唯一住宅物業","B. 律師在執業範疇內協助客戶處理物業轉讓文件","C. 收取佣金，代客洽購住宅物業","D. 朋友之間免費介紹物業","E. 財務機構職員評估物業作按揭用途"],
+ ans:"C", exp:"凡收取酬勞（包括傭金）代他人進行物業買賣或租賃的洽商，均屬「地產代理工作」，須持有有效牌照。選項A、B、D、E均屬豁免領牌的情況。"},
+
+// 第二部分: 《地產代理條例》及附屬法例
+{part:1, area:"《地產代理條例》及附屬法例", q:"根據《地產代理條例》，申請地產代理（個人）牌照的法定最低年齡為？",
+ opts:["A. 16歲","B. 17歲","C. 18歲","D. 21歲","E. 條例未有訂明最低年齡"],
+ ans:"C", exp:"根據《地產代理條例》，申請人必須年滿18歲，方可申請地產代理（個人）牌照或營業員牌照。"},
+
+{part:1, area:"《地產代理條例》及附屬法例", q:"持牌地產代理（個人）的牌照有效期為多久？",
+ opts:["A. 6個月，可續期","B. 1年，可續期","C. 2年，可續期","D. 3年，可續期","E. 永久有效，無需續期"],
+ ans:"B", exp:"地產代理（個人）牌照及營業員牌照的有效期均為1年，持牌人須在期滿前提出續期申請。"},
+
+{part:1, area:"《地產代理條例》及附屬法例", q:"地產代理（個人）牌照持有人擬轉換獲授權代理人（即所屬的持牌地產代理公司），須採取什麼行動？",
+ opts:["A. 只需口頭通知監管局，無需書面申請","B. 必須重新考取地產代理資格考試","C. 須向監管局提交更改獲授權代理人的申請，並繳付訂明費用","D. 舊牌照會自動失效，須重新申請新牌照","E. 無需通知監管局，由新僱主代為處理即可"],
+ ans:"C", exp:"持牌地產代理（個人）轉換公司時，須就牌照上的獲授權代理人作出更改，向監管局提交申請及繳費。未完成手續前，不得以新公司名義從事地產代理工作。"},
+
+{part:1, area:"《地產代理條例》及附屬法例", q:"根據《操守守則》，地產代理在從事雙重代理（即同時代表買賣雙方）時，必須：",
+ opts:["A. 向監管局事先申報","B. 分別取得買賣雙方的書面知情同意，並在協議書中披露","C. 只需取得出價較高一方的同意","D. 向行業協會登記","E. 無需任何特別披露，此屬正常業務"],
+ ans:"B", exp:"根據《操守守則》第4條，代理在雙重代理情況下，必須分別取得買賣雙方書面同意，並在代理協議中清楚披露其雙重代理身份。"},
+
+{part:1, area:"《地產代理條例》及附屬法例", q:"監管局對違規持牌人可採取以下哪種或哪些紀律行動？",
+ opts:["A. 只可發出書面警告","B. 只可撤銷牌照","C. 只可罰款","D. 暫時吊銷牌照或撤銷牌照，但不可罰款","E. 警告、罰款、暫時吊銷牌照或撤銷牌照"],
+ ans:"E", exp:"根據《地產代理條例》，監管局可就紀律事宜對持牌人作出以下裁定：警告、譴責、罰款（最高10萬元）、暫時吊銷牌照或撤銷牌照。"},
+
+{part:1, area:"《地產代理條例》及附屬法例", q:"根據《操守守則》，地產代理必須保存與地產代理工作有關的帳目及紀錄，保存期為：",
+ opts:["A. 1年","B. 3年","C. 5年","D. 7年","E. 10年"],
+ ans:"C", exp:"《操守守則》規定，持牌人須保存帳目及紀錄不少於5年，以備監管局查閱。"},
+
+{part:1, area:"《地產代理條例》及附屬法例", q:"地產代理代客洽購物業時，發現業主是其親屬，根據《操守守則》，代理應：",
+ opts:["A. 不需披露，親屬關係屬私人事務","B. 立即辭去代理職務","C. 書面向客戶披露其與業主的關係，並取得客戶同意方可繼續","D. 向監管局申請豁免","E. 只需口頭告知客戶"],
+ ans:"C", exp:"根據《操守守則》關於利益衝突的規定，代理須書面向客戶披露任何可能影響其代理職責的個人利益或關係，並取得客戶書面同意。"},
+
+// 第三部分: 其他相關法例及轉讓程序
+{part:1, area:"相關法例及物業轉讓程序", q:"香港住宅物業買賣的一般程序，由臨時買賣合約至正式買賣合約，通常於多少個工作日內完成？",
+ opts:["A. 3個工作日","B. 7個工作日","C. 14個工作日","D. 30個工作日","E. 法律上無固定限制，完全由雙方協議"],
+ ans:"C", exp:"雖然法律上並無強制規定，但市場慣例一般為在簽署臨時買賣合約後約14個工作日內，簽署正式買賣合約。"},
+
+{part:1, area:"相關法例及物業轉讓程序", q:"買方在簽訂臨時買賣合約後無故撤銷交易，一般的後果是：",
+ opts:["A. 只須退還臨時訂金，無其他責任","B. 須向賣方賠償樓價10%","C. 通常喪失已繳付的臨時訂金，且可能須支付代理傭金","D. 須賠償賣方全部樓價","E. 監管局會介入調解，買方無需承擔責任"],
+ ans:"C", exp:"根據一般臨時買賣合約條款，買方無故撤銷交易，臨時訂金會被沒收。此外，根據代理協議，買方仍可能須支付代理傭金，因代理已促成買賣雙方達成協議。"},
+
+{part:1, area:"相關法例及物業轉讓程序", q:"賣方在簽訂臨時買賣合約後無故拒絕出售物業，一般的後果是：",
+ opts:["A. 只須退還臨時訂金","B. 須向買方退還臨時訂金，並額外支付同等金額作為賠償（即雙倍訂金）","C. 須賠償買方樓價全數","D. 買方可向法院申請強制完成交易，賣方無需賠款","E. 由監管局仲裁，賣方最多罰款5萬元"],
+ ans:"B", exp:"根據一般臨時買賣合約條款，賣方無故違約，須向買方退還已收取的臨時訂金，並額外支付同等金額作為賠償（合共為雙倍訂金）。"},
+
+{part:1, area:"相關法例及物業轉讓程序", q:"根據現行（2024年2月28日起）的印花稅制度，以下哪項敍述正確？",
+ opts:["A. 買家印花稅（BSD）仍適用於非香港永久居民","B. 額外印花稅（SSD）仍適用於短期內轉售住宅物業","C. 買家印花稅（BSD）、額外印花稅（SSD）及新住宅從價印花稅（NRSD）已全面撤銷","D. 新住宅從價印花稅（NRSD）只適用於公司買家","E. 以上印花稅的稅率已下調50%，但並未撤銷"],
+ ans:"C", exp:"政府於2024年2月28日宣布全面「撤辣」，一次性取消所有住宅需求管理措施，包括買家印花稅（BSD）、額外印花稅（SSD）及新住宅從價印花稅（NRSD）。所有買家現時只須繳交標準從價印花稅（AVD）。"},
+
+{part:1, area:"相關法例及物業轉讓程序", q:"根據2025年財政預算案，購買樓價不超過400萬元的住宅物業，從價印花稅（AVD）為：",
+ opts:["A. 樓價的1%","B. 樓價的1.5%","C. 樓價的3%","D. 100港元（劃一稅額）","E. 完全豁免，無需繳交"],
+ ans:"D", exp:"2025年財政預算案宣布，凡購入樓價400萬元或以下住宅物業的買家，從價印花稅劃一為100港元（象徵式稅額），以減輕首置人士負擔。"},
+
+// 第四部分: 土地註冊制度及物業查冊
+{part:1, area:"土地註冊制度及物業查冊", q:"香港土地註冊處（土地註冊處）的主要功能是：",
+ opts:["A. 評估物業市場價值","B. 登記土地及物業相關法律文件，以確立業權優先次序","C. 批准物業建築設計","D. 徵收物業稅及差餉","E. 管理政府土地出售及拍賣"],
+ ans:"B", exp:"土地註冊處負責登記影響土地及物業的法律文件，如轉讓契、按揭契、判決令等，並根據登記先後確立業權優先次序。"},
+
+{part:1, area:"土地註冊制度及物業查冊", q:"買家的律師在簽署臨時買賣合約後，通常會申請「優先查冊」（Priority Search），其目的是：",
+ opts:["A. 加快土地查冊的處理速度","B. 在指定期間內查核有否新文件登記，保障買家業權","C. 申請更改物業用途","D. 取得買家按揭銀行的批准","E. 確認物業的實用面積"],
+ ans:"B", exp:"「優先查冊」為買家的律師在土地查冊後至成交前提供一段保護期，在此期間若有新的押記文件登記，律師可及時發現並採取適當行動，保障買家利益。"},
+
+{part:1, area:"土地註冊制度及物業查冊", q:"以下哪項文件可在土地註冊處查冊時查閱？",
+ opts:["A. 業主的個人身份証資料","B. 物業的租金紀錄","C. 物業上的按揭及押記文件","D. 物業的管理費收據","E. 業主的銀行存款資料"],
+ ans:"C", exp:"在土地查冊中，可查閱登記於該物業的各類法律文件，包括轉讓契、按揭、判決令、押記令、限制令等，但不包括個人財務或私人資料。"},
+
+{part:1, area:"土地註冊制度及物業查冊", q:"「地段」（Lot）是香港描述土地的基本單位，以下哪項關於地段的敍述正確？",
+ opts:["A. 每個地段均對應一個獨立的住宅單位","B. 新界土地一律稱為「鄉郊地段」","C. 地段號碼由城市規劃委員會分配","D. 市區土地的地段主要分為「内地段」、「市區地段」等類別","E. 地段資料只可在地政總署查閱，不可在土地註冊處查閱"],
+ ans:"D", exp:"香港土地地段按地區分類，主要包括：市區地段（UL）、内地段（IL）、新九龍内地段（NKIL）、新界鄉村式發展地段（NTLD）、新界丈量約份地段（lot in DD）等，由地政總署按地區記錄。"},
+
+// 第五部分: 建築知識、物業分類及物業管理
+{part:1, area:"建築知識、物業分類及物業管理", q:"「公用契約」（俗稱「公契」，Deed of Mutual Covenant）的主要功能是：",
+ opts:["A. 界定政府與業主之間的地契關係","B. 規定業主與銀行之間的按揭條款","C. 確立分層物業各業主的權利、義務及公用地方的管理規則","D. 批准物業進行裝修改建","E. 規定業主必須自行管理物業"],
+ ans:"C", exp:"公契（DMC）是分層物業各業主之間訂立的契約，界定各業主對物業及公用地方的使用權、份數（Management Shares），以及物業管理規則，具法律約束力。"},
+
+{part:1, area:"建築知識、物業分類及物業管理", q:"根據《建築物條例》，以下哪項屬於「僭建物」（Unauthorized Building Works，UBW）？",
+ opts:["A. 已獲屋宇署批准並完成的擴建工程","B. 大廈公用走廊未經批准加設的貯物架","C. 業主在其單位内更換窗戶（規格相同）","D. 管理處批准的大廈外牆廣告","E. 已登記於土地查冊的樓宇附加設施"],
+ ans:"B", exp:"任何在未獲屋宇署批准下進行的建築工程均屬僭建物。在公用走廊未經批准加設的貯物架，既影響公用地方，又未獲批准，屬僭建物。"},
+
+{part:1, area:"建築知識、物業分類及物業管理", q:"根據《一手住宅物業銷售條例》，發展商在售樓書中必須使用以下哪種面積量度方式？",
+ opts:["A. 建築面積（Gross Floor Area）","B. 可出租面積（Lettable Area）","C. 實用面積（Saleable Area）","D. 地盤面積（Site Area）","E. 公共面積（Common Area）"],
+ ans:"C", exp:"《一手住宅物業銷售條例》規定，發展商必須以「實用面積」作為主要的面積量度單位，並以此計算呎價，以保障買家獲得清晰一致的資訊。"},
+
+{part:1, area:"建築知識、物業分類及物業管理", q:"以下哪個機構負責審批香港私人樓宇的建築圖則？",
+ opts:["A. 地政總署","B. 城市規劃委員會","C. 屋宇署","D. 房屋署","E. 規劃署"],
+ ans:"C", exp:"屋宇署根據《建築物條例》，負責審批私人樓宇的建築圖則及監督建築工程，確保符合建築安全標準。"},
+
+// 第六部分: 物業估價原則及實務
+{part:1, area:"物業估價原則及實務", q:"物業估價的「市場比較法」（Comparison Method / Direct Comparison Approach）最適用於：",
+ opts:["A. 獨特的歷史建築，因缺乏可比成交而難以估值","B. 市場上有大量相類成交紀錄的住宅物業","C. 自用的工廠大廈，以重建成本作基礎","D. 新落成的商業中心，以預計租金收入作基礎","E. 政府物業，以帳面值作基礎"],
+ ans:"B", exp:"市場比較法透過分析市場上近期的相類物業成交價，調整因素差異後估算目標物業的市值，最適用於市場活躍、可比較成交充足的住宅物業。"},
+
+{part:1, area:"物業估價原則及實務", q:"「應課差餉租值」（Rateable Value）是由哪個政府機構評估？",
+ opts:["A. 地政總署","B. 差餉物業估價署","C. 土地註冊處","D. 屋宇署","E. 稅務局"],
+ ans:"B", exp:"差餉物業估價署（Rating and Valuation Department）負責評估各類物業的應課差餉租值，作為徵收差餉的基礎，亦會定期進行全港物業估價。"},
+
+{part:1, area:"物業估價原則及實務", q:"採用「收益法」（Income Approach / Investment Method）評估商業物業時，以下哪個因素最為關鍵？",
+ opts:["A. 物業的樓齡","B. 物業的外觀設計","C. 物業的市場租金收益及資本化率","D. 物業的重建成本","E. 物業的地段名稱"],
+ ans:"C", exp:"收益法通過將物業的淨租金收入除以資本化率（Capitalization Rate / Yield）來評估物業價值，核心考量為租金收益及市場的資本化率水平。"},
+
+// 第七部分: 租賃及租務事宜
+{part:1, area:"租賃及租務事宜", q:"香港私人住宅租賃合約，若雙方未有明確約定，業主欲收回單位，一般須給予租客多少個月的通知期？",
+ opts:["A. 1個月","B. 2個月","C. 3個月","D. 6個月","E. 視乎租約年期，並無一定標準"],
+ ans:"A", exp:"根據《業主與租客（綜合）條例》，若租賃協議未有明確訂明通知期，業主或租客欲終止租約，一般須給予對方不少於1個月的通知。"},
+
+{part:1, area:"租賃及租務事宜", q:"以下關於租賃按金的陳述，哪項最為準確？",
+ opts:["A. 按金金額由法例規定，上限為2個月租金","B. 按金在租約期間由監管局託管","C. 按金一般為1至3個月租金，金額由業主與租客協商決定","D. 按金可在租約期間用以抵銷租金","E. 按金須存入業主指定的銀行信託賬戶"],
+ ans:"C", exp:"香港私人住宅按金並無法定上限，通常為1至3個月租金，由雙方協議。按金應於租約期滿、租客交吉後歸還（扣除合理損耗後）。一般租約條款不允許以按金抵銷租金。"},
+
+{part:1, area:"租賃及租務事宜", q:"在香港，以下哪項租賃文件須在訂立後1個月内向稅務局呈交及繳稅？",
+ opts:["A. 臨時租約","B. 正式租賃協議（租約）","C. 管理費收據","D. 租客入住通知書","E. 物業點交確認書"],
+ ans:"B", exp:"根據《印花稅條例》，住宅及非住宅物業的正式租賃協議須在訂立後1個月內，向稅務局呈交及繳交印花稅。"},
+
+// 第八部分: 有效管理及督導
+{part:1, area:"有效管理及督導", q:"持牌地產代理（公司）對其旗下持牌地產代理（個人）及營業員的監管責任包括：",
+ opts:["A. 無責任，個人牌照持有人須自行承擔所有責任","B. 確保旗下持牌人遵守《操守守則》及相關法例","C. 只須負責繳交旗下持牌人的牌照費用","D. 代替旗下持牌人應對一切民事訴訟","E. 向監管局申報旗下持牌人每月傭金收入"],
+ ans:"B", exp:"持牌地產代理（公司）（即獲授權代理人）有責任確保旗下的個人牌照持有人及營業員遵守《地產代理條例》、《操守守則》及一切相關法規，並建立適當的內部合規制度。"},
+
+{part:1, area:"有效管理及督導", q:"以下哪種持續專業發展（CPD）活動，監管局一般承認為有效的CPD活動？",
+ opts:["A. 地產代理的日常帶客睇樓工作","B. 由監管局認可機構舉辦的地產相關培訓課程及研討會","C. 自行閱讀任何書籍","D. 與客戶的業務會議","E. 公司内部的銷售技巧培訓（未經認可）"],
+ ans:"B", exp:"監管局規定持牌人須完成一定數量的持續專業發展（CPD）活動，以維持其業務知識及操守水平。合資格的CPD活動須由監管局認可的機構舉辦，並涵蓋指定的學習範疇。"},
+
+// ─── PART 2 : Case-based Questions ───
+
+// 案例一：雙重代理及傭金爭議
+{part:2, case:"案例一", caseText:"陳代理是一名持牌地產代理（個人），現正代表賣方王先生出售其位於九龍塘的獨立屋，叫價為5,000萬元。與此同時，陳代理亦獲買方李太太委託，協助她物色同類物業。在陳代理帶李太太視察王先生的物業後，李太太有意以4,800萬元承接。",
+ area:"雙重代理", q:"陳代理在上述情況下，其身份屬於：",
+ opts:["A. 聯合代理","B. 分組代理","C. 雙重代理","D. 獨家代理","E. 次代理"],
+ ans:"C", exp:"陳代理同時代表買方（李太太）及賣方（王先生），此情況在業界稱為「雙重代理」（Dual Agency）。"},
+
+{part:2, case:"案例一", caseText:"（續案例一）",
+ area:"雙重代理", q:"陳代理擬向王先生及李太太各收取成交價1%的傭金，他在法律上必須：",
+ opts:["A. 向監管局申報，並取得批准方可收取","B. 分別取得王先生及李太太的書面同意，方可向雙方收取傭金","C. 只需在正式成交後，書面通知雙方傭金安排","D. 選擇其中一方收取傭金，不可同時收取兩份","E. 只向出價較高一方（即賣方王先生）收取傭金"],
+ ans:"B", exp:"根據《操守守則》，代理進行雙重代理時，必須事先分別取得買賣雙方的書面知情同意，清楚披露其雙重代理身份及傭金安排，方可向雙方收取傭金。"},
+
+{part:2, case:"案例一", caseText:"（續案例一）李太太以4,800萬元的價格，與王先生訂立臨時買賣合約，並繳付相當於樓價3%的臨時訂金，即144萬元。",
+ area:"雙重代理", q:"陳代理收取144萬元臨時訂金後，應如何處理？",
+ opts:["A. 存入陳代理的個人銀行賬戶，待成交後才轉交","B. 立即全數轉交賣方王先生","C. 存入地產代理公司（獲授權代理人）的信託或客戶賬戶","D. 由陳代理保管，成交前無需作任何安排","E. 向監管局呈報，由監管局代為保管"],
+ ans:"C", exp:"根據監管局指引及《操守守則》，代理收取訂金後，必須存放於地產代理公司（獲授權代理人）的獨立客戶/信託賬戶，不可與公司業務資金混用，以保障雙方利益。"},
+
+{part:2, case:"案例一", caseText:"（續案例一）臨時買賣合約簽訂後第5天，李太太通知陳代理，她因個人財政問題，決定放棄購買，不打算簽署正式買賣合約。",
+ area:"雙重代理", q:"在上述情況下，就李太太的責任，以下哪項陳述最為準確？",
+ opts:["A. 李太太可無條件取回全部臨時訂金144萬元","B. 李太太一般須喪失臨時訂金144萬元，並可能須支付代理傭金","C. 李太太只須支付代理傭金，可取回全部訂金","D. 王先生須退還訂金，李太太無任何損失","E. 監管局會介入調解，決定訂金的歸屬"],
+ ans:"B", exp:"李太太屬買方違約，根據臨時買賣合約的一般條款，她將喪失已繳的臨時訂金144萬元。此外，根據代理協議，她亦可能須向陳代理支付代理傭金，因代理已促成雙方訂立臨時合約。"},
+
+{part:2, case:"案例一", caseText:"（續案例一）假設成交順利完成，王先生事後對陳代理的服務不滿，認為陳代理在代表雙方時，偏袒買方李太太，令他以較低價格售出物業。",
+ area:"雙重代理", q:"王先生如欲就陳代理的操守作出投訴，應向哪個機構提出？",
+ opts:["A. 香港警務處","B. 消費者委員會","C. 地產代理監管局","D. 香港法援署","E. 差餉物業估價署"],
+ ans:"C", exp:"有關地產代理操守的投訴，應向地產代理監管局提出。監管局會調查投訴，如認定持牌人違規，可啟動紀律程序，並作出相應紀律裁定。"},
+
+// 案例二：印花稅及物業稅務
+{part:2, case:"案例二", caseText:"張先生（香港永久居民）擬以700萬元購入一個私人住宅單位，這是他在香港的首個住宅物業。",
+ area:"印花稅", q:"根據現行（2024年2月28日撤辣後）印花稅制度，張先生購入此物業，一般須繳交以下哪種稅項？",
+ opts:["A. 從價印花稅（AVD）及買家印花稅（BSD）","B. 從價印花稅（AVD）及額外印花稅（SSD）","C. 只須繳交從價印花稅（AVD）","D. 從價印花稅（AVD）、買家印花稅（BSD）及額外印花稅（SSD）","E. 完全豁免所有印花稅"],
+ ans:"C", exp:"2024年2月28日政府全面撤辣後，所有住宅物業買賣（不論買家國籍、是否首置、持有物業數目）一律只須繳交標準從價印花稅（AVD），BSD及SSD已取消。"},
+
+{part:2, case:"案例二", caseText:"（續案例二）張先生以700萬元購入物業，且是首次置業。",
+ area:"印花稅", q:"根據現行從價印花稅稅率，700萬元物業所適用的稅率為（第1標準稅率，首置適用）：",
+ opts:["A. 完全豁免","B. 100港元（劃一）","C. 1.5%","D. 3%","E. 4.25%"],
+ ans:"D", exp:"根據現行從價印花稅第1標準稅率（首置人士適用），樓價600萬元至900萬元的物業，稅率為3%（即700萬元 × 3% = 21萬元）。如適用第2標準稅率（即持有多個物業人士），稅率另計。"},
+
+{part:2, case:"案例二", caseText:"（續案例二）張先生在購入上述物業後3年内，需要出售該物業。",
+ area:"印花稅", q:"就額外印花稅（SSD）而言，張先生出售物業時：",
+ opts:["A. 須繳交樓價20%的額外印花稅","B. 須繳交樓價10%的額外印花稅","C. 須繳交樓價5%的額外印花稅","D. 無需繳交額外印花稅，因SSD已於2024年撤銷","E. 須先向稅務局申請豁免"],
+ ans:"D", exp:"額外印花稅（SSD）已於2024年2月28日起正式撤銷，無論物業持有年期長短，賣方均無需繳交SSD。"},
+
+// 案例三：租賃及業主責任
+{part:2, case:"案例三", caseText:"李小姐是一名持牌地產代理，正協助業主黃先生將其住宅單位出租，月租為2萬元。租客鄭先生在簽署正式租賃協議前，先簽訂了臨時租約，並繳付2萬元作為細訂（即一個月租金）。",
+ area:"租賃及租務", q:"有關臨時租約的按金（細訂），以下哪項陳述正確？",
+ opts:["A. 細訂必須存入李小姐的個人賬戶","B. 細訂屬業主黃先生的財產，應立即轉交黃先生","C. 李小姐應將細訂存入地產代理公司的客戶賬戶，妥善保管","D. 細訂無法律約束力，租客可隨時取回","E. 細訂金額不得超過一個月租金"],
+ ans:"C", exp:"代理收取的訂金（包括細訂）應存入代理公司的客戶/信託賬戶，不得存入個人賬戶或業務賬戶。"},
+
+{part:2, case:"案例三", caseText:"（續案例三）正式租賃協議訂立後，業主黃先生及租客鄭先生希望知道何時及如何繳交印花稅。",
+ area:"租賃及租務", q:"就正式租賃協議的印花稅，以下陳述哪項正確？",
+ opts:["A. 租賃協議無需繳交印花稅","B. 租賃協議的印花稅由地產代理代為繳交","C. 應在訂立租賃協議後1個月內向稅務局呈交及繳稅","D. 應在租約屆滿後1個月內繳稅","E. 印花稅只適用於租期超過3年的租賃協議"],
+ ans:"C", exp:"根據《印花稅條例》，住宅及非住宅物業的正式租賃協議（不論租期長短），均須在訂立後1個月內向稅務局呈交加蓋印花，否則會被罰款。"},
+
+{part:2, case:"案例三", caseText:"（續案例三）正式租約簽訂後，業主黃先生在租約期限尚餘4個月時，擬提前收回單位，原因是他計劃出售物業。",
+ area:"租賃及租務", q:"在上述情況下，業主黃先生：",
+ opts:["A. 可即時要求租客搬遷，理由充分","B. 可在給予1個月通知後，要求租客遷出","C. 一般不可在租約屆滿前強制要求租客遷出，除非租約訂有提前終止條款","D. 只需給予2個月通知，即可強制收回","E. 可向監管局申請提前終止租約"],
+ ans:"C", exp:"一般而言，在固定租期租約（Fixed-term Tenancy）期限内，業主無權強制終止租約，除非合約内訂有「提前終止條款」（Break Clause）。欲出售物業並不構成提前終止租約的合法理由。"},
+
+// 案例四：物業估價與查冊
+{part:2, case:"案例四", caseText:"方先生是一名地產代理，正協助客戶趙小姐購入一個二手住宅單位。在委託代理前，趙小姐希望了解物業的估值及業權狀況。",
+ area:"物業估價與查冊", q:"地產代理方先生為趙小姐提供物業估值時，最應參考以下哪項資料？",
+ opts:["A. 業主要求的售價","B. 物業的原始建築成本","C. 差餉物業估價署公佈的應課差餉租值","D. 市場上近期同類物業的成交紀錄","E. 物業的帳面購入價"],
+ ans:"D", exp:"住宅物業的市場估值，最主要參考市場上近期相類物業的實際成交紀錄（Market Comparable Transactions），配合物業的樓層、朝向、裝修等因素作調整。"},
+
+{part:2, case:"案例四", caseText:"（續案例四）趙小姐的律師進行土地查冊後，發現該物業有一個已登記的「押記令」（Charging Order）。",
+ area:"物業估價與查冊", q:"「押記令」對物業交易有何影響？",
+ opts:["A. 押記令對買家沒有影響，可繼續完成交易","B. 押記令代表物業有法律負擔，買家律師須確保在成交前解除或安排清還","C. 押記令會令物業買賣自動作廢","D. 押記令只影響物業的差餉繳交","E. 押記令屬私人事務，只有業主本人可查閱"],
+ ans:"B", exp:"押記令是法庭命令，將債務押記於業主的物業上，令物業成為還款的保證。查冊發現押記令後，買家律師一般須要求賣方在成交前解除押記令，否則押記令會跟隨物業轉移，對新業主造成法律負擔。"},
+
+{part:2, case:"案例四", caseText:"（續案例四）趙小姐最終決定購入物業，並打算以按揭貸款支付大部分樓價。銀行將委託估價師進行獨立估值。",
+ area:"物業估價與查冊", q:"銀行委託獨立估價師評估物業，其主要目的是：",
+ opts:["A. 確定向趙小姐收取的手續費","B. 評估物業作為按揭抵押品的價值，以決定最高貸款額","C. 代表地政總署確認物業地段號碼","D. 替屋宇署確認物業是否符合建築標準","E. 為差餉物業估價署更新應課差餉租值"],
+ ans:"B", exp:"按揭銀行委託估價師進行估值，是為了評估物業作為按揭抵押品（Collateral）的市場價值，以確定可提供的最高按揭成數及貸款額，保障銀行的貸款風險。"},
+
+{part:2, case:"案例四", caseText:"（續案例四）在交易完成後，方先生獲支付傭金。他的客戶趙小姐向他反映，另一代理向她索取轉介費，聲稱是因為他將她介紹予方先生。",
+ area:"物業估價與查冊", q:"就上述情況，以下哪項陳述正確？",
+ opts:["A. 轉介費屬合法，地產代理可就介紹客戶而收取額外費用","B. 地產代理不可在未有取得客戶書面同意的情況下，就同一交易收取來自第三方的轉介費","C. 轉介費只需向監管局申報，無需取得客戶同意","D. 只要轉介費金額不超過傭金的10%，則屬合法","E. 監管局明確允許地產代理收取轉介費"],
+ ans:"B", exp:"根據《操守守則》，代理若就同一交易從第三方收取轉介費或任何形式的利益，必須事先向客戶作書面披露並取得同意，否則可能構成操守問題。"},
+
+];
+
+// ══════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════
+let answers = new Array(questions.length).fill(null);
+let currentQ = 0;
+let timerInterval = null;
+let secondsLeft = 3 * 3600;
+let submitted = false;
+
+// ══════════════════════════════════════════
+//  TIMER
+// ══════════════════════════════════════════
+function formatTime(s) {
+  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+}
+function startTimer() {
+  timerInterval = setInterval(() => {
+    secondsLeft--;
+    const el = document.getElementById('timer');
+    el.textContent = formatTime(secondsLeft);
+    if (secondsLeft <= 600) el.className = 'warning';
+    if (secondsLeft <= 120) el.className = 'danger';
+    if (secondsLeft <= 0) { clearInterval(timerInterval); submitExam(); }
+  }, 1000);
+}
+
+// ══════════════════════════════════════════
+//  RENDER QUESTION
+// ══════════════════════════════════════════
+function renderQuestion(idx) {
+  const q = questions[idx];
+  const body = document.getElementById('exam-body');
+  const isNewPart = idx === 0 || questions[idx-1].part !== q.part;
+  const isNewCase = q.case && (idx === 0 || questions[idx-1].case !== q.case);
+
+  let html = '';
+
+  if (isNewPart) {
+    const partDesc = q.part === 1
+      ? '30道獨立選擇題，每題5個選項，選出最佳答案'
+      : '根據案例情境回答相關問題（每題5個選項）';
+    html += `<div class="part-header"><h3>第${q.part === 1 ? '一' : '二'}部分 — Part ${q.part}</h3><p>${partDesc}</p></div>`;
+  }
+
+  if (q.part === 2 && isNewCase && q.caseText !== '（續案例一）' && q.caseText !== '（續案例二）' && q.caseText !== '（續案例三）' && q.caseText !== '（續案例四）') {
+    html += `<div class="case-block"><h4>${q.case}</h4><p>${q.caseText}</p></div>`;
+  } else if (q.part === 2 && q.caseText && !q.caseText.startsWith('（續')) {
+    html += `<div class="case-block"><h4>${q.case}</h4><p>${q.caseText}</p></div>`;
+  }
+
+  const qNum = idx + 1;
+  const userAns = answers[idx];
+
+  html += `<div class="question-card">
+    <div class="q-num">第 ${qNum} 題 / Q.${qNum} &nbsp;·&nbsp; ${q.area}</div>
+    <div class="q-text">${q.q}</div>
+    <div class="options" id="opts-${idx}">`;
+
+  q.opts.forEach((opt, i) => {
+    const key = ['A','B','C','D','E'][i];
+    let cls = '';
+    if (submitted) {
+      if (key === q.ans) cls = 'correct';
+      else if (key === userAns) cls = 'wrong';
+    } else if (key === userAns) cls = 'selected';
+    html += `<div class="option ${cls}" onclick="selectAnswer(${idx},'${key}')">
+      <span class="opt-key">${key}</span>
+      <span>${opt.substring(3)}</span>
+    </div>`;
+  });
+
+  html += `</div>`;
+  if (submitted) {
+    html += `<div class="explanation">💡 <strong>解析：</strong>${q.exp}</div>`;
+  }
+  html += `</div>`;
+
+  body.innerHTML = html;
+  updateNav(idx);
+  updateDots(idx);
+  updateProgress();
+}
+
+function selectAnswer(idx, key) {
+  if (submitted) return;
+  answers[idx] = key;
+  const opts = document.querySelectorAll(`#opts-${idx} .option`);
+  opts.forEach((el, i) => {
+    el.className = 'option' + (['A','B','C','D','E'][i] === key ? ' selected' : '');
+  });
+  updateDots(idx);
+}
+
+function updateNav(idx) {
+  document.getElementById('btn-prev').disabled = idx === 0;
+  const isLast = idx === questions.length - 1;
+  document.getElementById('btn-next').style.display = isLast ? 'none' : '';
+  document.getElementById('btn-submit').style.display = isLast && !submitted ? '' : 'none';
+  if (submitted) {
+    document.getElementById('btn-next').style.display = isLast ? 'none' : '';
+    document.getElementById('btn-submit').style.display = 'none';
+  }
+  const label = questions[idx].part === 1 ? '第一部分 (1–30)' : '第二部分 (31–50)';
+  document.getElementById('part-label').textContent = label;
+}
+
+function updateDots(currentIdx) {
+  const nav = document.getElementById('dot-nav');
+  nav.innerHTML = '';
+  questions.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (answers[i] !== null ? ' answered' : '') + (i === currentIdx ? ' current' : '');
+    d.onclick = () => { currentQ = i; renderQuestion(i); };
+    nav.appendChild(d);
+  });
+}
+
+function updateProgress() {
+  const answered = answers.filter(a => a !== null).length;
+  document.getElementById('progress-fill').style.width = (answered / questions.length * 100) + '%';
+}
+
+function goPrev() { if (currentQ > 0) { currentQ--; renderQuestion(currentQ); } }
+function goNext() { if (currentQ < questions.length-1) { currentQ++; renderQuestion(currentQ); } }
+
+// ══════════════════════════════════════════
+//  START
+// ══════════════════════════════════════════
+function startExam() {
+  document.getElementById('cover').style.display = 'none';
+  document.getElementById('exam').style.display = 'block';
+  renderQuestion(0);
+  startTimer();
+}
+
+// ══════════════════════════════════════════
+//  SUBMIT
+// ══════════════════════════════════════════
+function submitExam() {
+  const unanswered = answers.filter(a => a === null).length;
+  if (unanswered > 0 && !confirm(`你仍有 ${unanswered} 題未作答。確定要提交嗎？`)) return;
+
+  submitted = true;
+  clearInterval(timerInterval);
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-next').style.display = '';
+
+  // Calculate scores
+  const p1q = questions.filter(q => q.part === 1);
+  const p2q = questions.filter(q => q.part === 2);
+  const p1correct = p1q.filter((q, i) => answers[i] === q.ans).length;
+  const p2correct = p2q.filter((q, i) => answers[i + p1q.length] === q.ans).length;
+  const p1pct = Math.round(p1correct / p1q.length * 100);
+  const p2pct = Math.round(p2correct / p2q.length * 100);
+  const passed = p1pct >= 60 && p2pct >= 60;
+
+  showResults(p1correct, p1q.length, p1pct, p2correct, p2q.length, p2pct, passed);
+}
+
+// ══════════════════════════════════════════
+//  RESULTS
+// ══════════════════════════════════════════
+function showResults(p1c, p1t, p1pct, p2c, p2t, p2pct, passed) {
+  document.getElementById('exam').style.display = 'none';
+  const res = document.getElementById('results');
+  res.style.display = 'block';
+
+  const totalCorrect = p1c + p2c;
+  const totalQ = p1t + p2t;
+
+  let wrongItems = '';
+  questions.forEach((q, i) => {
+    const userAns = answers[i];
+    const correct = userAns === q.ans;
+    const skip = userAns === null;
+    const cls = skip ? 'r-skip' : (correct ? 'r-correct' : 'r-wrong');
+    const icon = skip ? '⬜' : (correct ? '✅' : '❌');
+    const ansLabel = q.opts.find(o => o.startsWith(q.ans + '.')||o.startsWith(q.ans+'.')||o.startsWith(q.ans+' '));
+
+    wrongItems += `<div class="review-card ${cls}">
+      <div class="review-q">${icon} <strong>Q${i+1}.</strong> ${q.q}</div>
+      <div class="review-answers">`;
+    if (!correct) {
+      if (skip) wrongItems += `<span class="ans-skip">未作答</span>`;
+      else wrongItems += `<span class="ans-yours">你的答案：${userAns}</span>`;
+      wrongItems += `<span class="ans-correct-label">正確答案：${q.ans}</span>`;
+    } else {
+      wrongItems += `<span class="ans-correct-label">正確：${q.ans}</span>`;
+    }
+    wrongItems += `</div><div class="explanation">💡 ${q.exp}</div></div>`;
+  });
+
+  res.innerHTML = `
+  <div class="results-header">
+    <h2>考試結果</h2>
+    <div class="overall-badge ${passed ? 'badge-pass' : 'badge-fail'}">${passed ? '🎉 恭喜！成績合格' : '❌ 成績未達標準'}</div>
+    <p style="color:var(--muted);font-size:14px">兩部分均須達60%方為合格</p>
+  </div>
+
+  <div class="score-grid">
+    <div class="score-card">
+      <h4>第一部分 (Q1–30)</h4>
+      <div class="score-big ${p1pct >= 60 ? 'score-pass' : 'score-fail'}">${p1pct}%</div>
+      <div class="score-sub">${p1c} / ${p1t} 題正確</div>
+      <div class="result-note ${p1pct >= 60 ? 'note-pass' : 'note-fail'}">${p1pct >= 60 ? '✅ 合格' : '❌ 未合格（需≥60%）'}</div>
+    </div>
+    <div class="score-card">
+      <h4>第二部分 (Q31–50)</h4>
+      <div class="score-big ${p2pct >= 60 ? 'score-pass' : 'score-fail'}">${p2pct}%</div>
+      <div class="score-sub">${p2c} / ${p2t} 題正確</div>
+      <div class="result-note ${p2pct >= 60 ? 'note-pass' : 'note-fail'}">${p2pct >= 60 ? '✅ 合格' : '❌ 未合格（需≥60%）'}</div>
+    </div>
+    <div class="score-card" style="grid-column:1/-1">
+      <h4>總分</h4>
+      <div class="score-big ${passed ? 'score-pass' : 'score-fail'}">${Math.round(totalCorrect/totalQ*100)}%</div>
+      <div class="score-sub">${totalCorrect} / ${totalQ} 題正確</div>
+    </div>
+  </div>
+
+  <div class="review-section">
+    <h3>所有題目解析</h3>
+    ${wrongItems}
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="reviewMode()">重溫考卷</button>
+    <button class="btn btn-secondary" onclick="location.reload()">重新考試</button>
+  </div>`;
+}
+
+function reviewMode() {
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('exam').style.display = 'block';
+  currentQ = 0;
+  renderQuestion(0);
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-next').style.display = '';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>香港地產代理資格考試 — 模擬考試（題目庫版）</title>
+<style>
+:root{--primary:#1a3a5c;--accent:#c8a84b;--bg:#f5f6f8;--card:#fff;--border:#dde2ec;--text:#1c2b3a;--muted:#6b7c93;--pass:#2e7d32;--fail:#c62828;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Helvetica Neue',Arial,'Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+#cover{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 20px;text-align:center;}
+.badge{background:var(--primary);color:#fff;font-size:12px;letter-spacing:2px;padding:5px 16px;border-radius:20px;margin-bottom:20px;display:inline-block;}
+.cover-title{font-size:clamp(22px,4vw,34px);font-weight:700;color:var(--primary);line-height:1.3;margin-bottom:6px;}
+.cover-sub{font-size:15px;color:var(--muted);margin-bottom:28px;}
+.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:560px;width:100%;margin-bottom:28px;}
+.info-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;}
+.info-card .lbl{font-size:11px;color:var(--muted);margin-bottom:3px;}
+.info-card .val{font-size:17px;font-weight:700;color:var(--primary);}
+.cover-note{margin-top:16px;font-size:12px;color:var(--muted);max-width:560px;line-height:1.6;}
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:580px;width:100%;margin-bottom:14px;}
+.mode-card{background:var(--card);border:2px solid var(--border);border-radius:14px;padding:22px 18px;text-align:left;transition:border-color .2s,box-shadow .2s;}
+.mode-card:hover{box-shadow:0 8px 24px rgba(0,0,0,.1);}
+.mode-card.mc-exam:hover{border-color:var(--primary);}
+.mode-card.mc-train:hover{border-color:var(--accent);}
+.mode-icon{font-size:32px;margin-bottom:10px;}
+.mode-card h3{font-size:18px;font-weight:700;color:var(--primary);margin-bottom:2px;}
+.mode-sub{font-size:11px;color:var(--muted);margin-bottom:12px;letter-spacing:.3px;}
+.mode-feats{list-style:none;margin-bottom:16px;}
+.mode-feats li{font-size:12.5px;color:var(--text);padding:2px 0;padding-left:14px;position:relative;}
+.mode-feats li::before{content:'›';position:absolute;left:0;color:var(--accent);font-weight:700;}
+.btn-mode{width:100%;padding:11px;border-radius:8px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:transform .12s,box-shadow .12s;}
+.btn-mode:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.2);}
+.btn-exam{background:var(--primary);color:#fff;}
+.btn-train{background:var(--accent);color:#fff;}
+#training{display:none;}
+.train-hdr{background:var(--primary);color:#fff;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2);}
+.train-hdr-left h2{font-size:15px;font-weight:600;}
+.train-hdr-left p{font-size:11px;opacity:.7;margin-top:2px;}
+.t-score-pill{font-size:13px;background:rgba(255,255,255,.15);padding:5px 14px;border-radius:20px;white-space:nowrap;}
+.train-body{max-width:700px;margin:0 auto;padding:24px 16px 90px;}
+.t-result{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;padding:10px 14px;border-radius:8px;margin-top:12px;line-height:1.5;}
+.t-result.t-correct{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;}
+.t-result.t-wrong{background:#ffebee;color:#c62828;border:1px solid #ef9a9a;}
+.t-exp-text{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.65;}
+.train-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);padding:10px 16px;display:flex;justify-content:center;gap:10px;z-index:99;box-shadow:0 -2px 10px rgba(0,0,0,.08);}
+#exam{display:none;}
+.exam-hdr{background:var(--primary);color:#fff;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2);}
+.hdr-left h2{font-size:15px;font-weight:600;}
+.hdr-sub{font-size:11px;opacity:.7;margin-top:2px;}
+#timer{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:1px;}
+#timer.warn{color:#ffb300;}
+#timer.danger{color:#ff5252;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.prog-bar{height:3px;background:rgba(26,58,92,.15);}
+.prog-fill{height:100%;background:var(--accent);transition:width .3s;}
+.exam-wrap{display:flex;align-items:flex-start;}
+.exam-main{flex:1;min-width:0;}
+.exam-body{max-width:820px;margin:0 auto;padding:20px 16px 90px;}
+.q-nav{width:164px;flex-shrink:0;position:sticky;top:67px;height:calc(100vh - 67px);overflow-y:auto;background:#fff;border-left:1px solid var(--border);padding:10px 8px;box-shadow:-2px 0 8px rgba(0,0,0,.05);}
+.qn-label{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.8px;text-align:center;padding:4px 0 6px;text-transform:uppercase;}
+.qn-grid{display:flex;flex-wrap:wrap;gap:3px;justify-content:center;margin-bottom:8px;}
+.qn{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;border:2px solid transparent;background:#ef5350;color:#fff;transition:opacity .1s,border-color .1s;}
+.qn:hover{opacity:.8;}
+.qn.done{background:#43a047;}
+.qn.cur{border-color:#1c2b3a;box-shadow:0 0 0 1px #1c2b3a;}
+.qn-divider{height:1px;background:var(--border);margin:6px 0;}
+.qn-summary{font-size:11px;color:var(--muted);text-align:center;padding:7px 4px 4px;border-top:1px solid var(--border);margin-top:4px;}
+.part-hdr{background:var(--primary);color:#fff;border-radius:10px;padding:16px 20px;margin-bottom:20px;}
+.part-hdr h3{font-size:17px;font-weight:700;margin-bottom:3px;}
+.part-hdr p{font-size:12px;opacity:.75;}
+.part-hdr-land{background:#4a3000;}
+.case-details{margin-bottom:16px;border-radius:8px;overflow:hidden;border:1px solid #c8a84b;}
+.case-details summary{background:var(--primary);color:#fff;padding:10px 16px;cursor:pointer;font-weight:600;font-size:13px;list-style:none;user-select:none;display:flex;align-items:center;gap:8px;}
+.case-details summary::-webkit-details-marker{display:none;}
+.case-details summary::after{content:'▲';margin-left:auto;font-size:10px;opacity:.8;transition:transform .2s;}
+.case-details:not([open]) summary::after{transform:rotate(180deg);}
+.case-inner{background:#fffcf3;padding:16px;}
+.case-text{font-size:13px;line-height:1.85;color:#3a3520;margin-bottom:14px;white-space:pre-wrap;}
+.land-reg{background:#fffdf5;border:1px solid #d4b96a;border-radius:6px;padding:14px;font-size:12px;overflow-x:auto;}
+.land-reg h4{font-size:13px;font-weight:700;color:var(--primary);text-align:center;margin-bottom:10px;}
+.land-reg table{width:100%;border-collapse:collapse;font-size:11px;}
+.land-reg table th,.land-reg table td{border:1px solid #c8b06a;padding:4px 6px;vertical-align:top;}
+.land-reg table th{background:#f5e9c0;font-weight:700;text-align:center;}
+.section-title{background:#e8d5a0;font-weight:700;text-align:center;font-size:12px;padding:4px;}
+.q-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:14px;}
+.q-area{font-size:11px;font-weight:700;color:var(--accent);letter-spacing:1px;margin-bottom:8px;}
+.q-text{font-size:14.5px;line-height:1.75;margin-bottom:14px;font-weight:500;white-space:pre-wrap;}
+.opts{display:flex;flex-direction:column;gap:7px;}
+.opt{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1.5px solid var(--border);border-radius:7px;cursor:pointer;transition:background .1s,border-color .1s;font-size:13.5px;line-height:1.5;}
+.opt:hover{background:#eef3fb;border-color:#aac0e0;}
+.opt.sel{background:#d6e4f7;border-color:#5b9bd5;}
+.opt.correct{background:#e8f5e9;border-color:#4caf50;}
+.opt.wrong{background:#ffebee;border-color:#ef5350;}
+.opt-k{font-weight:700;color:var(--primary);min-width:16px;flex-shrink:0;}
+.opt.correct .opt-k{color:#2e7d32;}
+.opt.wrong .opt-k{color:#c62828;}
+.explanation{font-size:13px;color:var(--muted);margin-top:10px;padding:8px 12px;background:var(--bg);border-radius:6px;line-height:1.65;}
+.nav-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);padding:10px 16px;display:flex;justify-content:center;gap:10px;z-index:99;box-shadow:0 -2px 10px rgba(0,0,0,.08);}
+.btn{padding:11px 24px;border-radius:8px;border:none;font-size:14px;font-weight:600;cursor:pointer;transition:transform .12s,box-shadow .12s;}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.15);}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-secondary{background:var(--card);color:var(--primary);border:1.5px solid var(--primary);}
+.btn-accent{background:var(--accent);color:#fff;}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none;}
+#results{display:none;max-width:740px;margin:0 auto;padding:36px 16px;}
+.res-hdr{text-align:center;margin-bottom:28px;}
+.res-hdr h2{font-size:26px;font-weight:700;color:var(--primary);margin-bottom:8px;}
+.verdict{display:inline-block;font-size:17px;font-weight:700;padding:9px 28px;border-radius:28px;margin-bottom:16px;}
+.v-pass{background:#e8f5e9;color:#2e7d32;border:2px solid #4caf50;}
+.v-fail{background:#ffebee;color:#c62828;border:2px solid #ef5350;}
+.score-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px;}
+.sc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;}
+.sc h4{font-size:12px;color:var(--muted);margin-bottom:10px;letter-spacing:.5px;}
+.sc-big{font-size:44px;font-weight:800;line-height:1;margin-bottom:4px;}
+.sc-sub{font-size:13px;color:var(--muted);}
+.sc-note{font-size:12px;padding:6px 12px;border-radius:6px;margin-top:8px;font-weight:700;}
+.n-pass{background:#e8f5e9;color:#2e7d32;}
+.n-fail{background:#ffebee;color:#c62828;}
+.col-pass{color:var(--pass);}
+.col-fail{color:var(--fail);}
+.rev-section h3{font-size:17px;font-weight:700;color:var(--primary);margin-bottom:14px;border-bottom:2px solid var(--border);padding-bottom:8px;}
+.rev-card{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:16px 18px;margin-bottom:10px;}
+.rev-card.rc{border-left:4px solid #4caf50;}
+.rev-card.rw{border-left:4px solid #ef5350;}
+.rev-card.rs{border-left:4px solid #ff9800;}
+.rev-q{font-size:13.5px;font-weight:500;margin-bottom:8px;line-height:1.6;white-space:pre-wrap;}
+.rev-ans span{display:inline-block;padding:3px 10px;border-radius:10px;margin-right:5px;margin-bottom:3px;font-weight:600;font-size:12px;}
+.ans-u{background:#e3f2fd;color:#1565c0;}
+.ans-c{background:#e8f5e9;color:#2e7d32;}
+.ans-s{background:#fff3e0;color:#e65100;}
+.btn-row{display:flex;gap:10px;justify-content:center;margin-top:24px;flex-wrap:wrap;}
+@media(max-width:640px){.score-grid{grid-template-columns:1fr;}.mode-grid{grid-template-columns:1fr;}.q-nav{width:108px;}.qn{width:24px;height:24px;font-size:10px;}}
+</style>
+</head>
+<body>
+<div id="cover">
+  <span class="badge">EAAB 地產代理監管局</span>
+  <h1 class="cover-title">地產代理資格考試<br>題目庫練習系統</h1>
+  <p class="cover-sub">涵蓋全部章節、執業通告及三個綜合個案</p>
+  <div class="mode-grid">
+    <div class="mode-card mc-exam">
+      <div class="mode-icon">📝</div>
+      <h3>模擬考試</h3>
+      <p class="mode-sub">Mock Exam Mode</p>
+      <ul class="mode-feats">
+        <li>50題 · 3小時計時</li>
+        <li>第一部分：30題選擇題</li>
+        <li>第二部分（甲）：10題個案分析</li>
+        <li>第二部分（乙）：10題土地查冊</li>
+        <li>完成後顯示成績及詳解</li>
+      </ul>
+      <button class="btn-mode btn-exam" onclick="startExam()">開始模擬考試 →</button>
+    </div>
+    <div class="mode-card mc-train">
+      <div class="mode-icon">🎯</div>
+      <h3>練習模式</h3>
+      <p class="mode-sub">Training Mode</p>
+      <ul class="mode-feats">
+        <li>隨機抽取題目庫全部題目</li>
+        <li>回答後即時顯示正確答案</li>
+        <li>附詳細解析說明</li>
+        <li>無時間限制，隨時退出</li>
+        <li>追蹤本次練習正確率</li>
+      </ul>
+      <button class="btn-mode btn-train" onclick="startTraining()">開始練習 →</button>
+    </div>
+  </div>
+  <p class="cover-note">⚠️ 題目庫每次隨機抽取，包含（I）（II）（III）組合式選擇題。第二部分個案分析及土地查冊均附詳細資料供參考。法例以2024年撤辣後最新版本為準。</p>
+</div>
+<div id="exam">
+  <div class="exam-hdr">
+    <div class="hdr-left">
+      <h2 id="part-label">第一部分</h2>
+      <p class="hdr-sub" id="hdr-sub">選擇題 Q1–30</p>
+    </div>
+    <div id="timer">3:00:00</div>
+  </div>
+  <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  <div class="exam-wrap">
+    <div class="exam-main"><div class="exam-body" id="exam-body"></div></div>
+    <div class="q-nav" id="q-nav"></div>
+  </div>
+  <div class="nav-bar">
+    <button class="btn btn-secondary" id="btn-prev" onclick="goPrev()" disabled>← 上一題</button>
+    <button class="btn btn-primary" id="btn-next" onclick="goNext()">下一題 →</button>
+    <button class="btn btn-accent" id="btn-submit" onclick="submitExam()" style="display:none">提交答案</button>
+  </div>
+</div>
+<div id="training">
+  <div class="train-hdr">
+    <div class="train-hdr-left">
+      <h2>練習模式 Training</h2>
+      <p id="t-qnum">第 1 題</p>
+    </div>
+    <div id="t-score" class="t-score-pill">✅ 0 / 0 正確</div>
+  </div>
+  <div class="train-body" id="training-body"></div>
+  <div class="train-nav">
+    <button class="btn btn-secondary" onclick="exitTraining()">← 返回主頁</button>
+    <button class="btn btn-accent" id="t-next" onclick="trainNext()" style="display:none">下一題 →</button>
+  </div>
+</div>
+<div id="results"></div>
+<script src="exam_data.js"></script>
+<script src="exam_engine.js"></script>
+</body>
+</html>
